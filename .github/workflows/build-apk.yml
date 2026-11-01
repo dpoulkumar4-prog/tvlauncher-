@@ -21,25 +21,27 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Extract Android project
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Extract project
         run: |
           unzip -q MyTVLauncher-GitHub-Build.zip -d extracted
 
-      - name: Find Gradle project
-        run: |
-          find extracted -name gradlew -type f
-
       - name: Build APK
         run: |
-          PROJECT_DIR=$(dirname "$(find extracted -name gradlew -type f | head -n 1)")
-          chmod +x "$PROJECT_DIR/gradlew"
-          cd "$PROJECT_DIR"
-          ./gradlew assembleDebug
+          cd extracted
+          gradle --no-daemon assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Aurora-TV-APK
-          path: extracted/**/build/outputs/apk/debug/*.apk
+          path: extracted/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
           
